@@ -1,70 +1,83 @@
-# Getting Started with Create React App
+# 🗄️ LocalDB Manager
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-## Available Scripts
+**LocalDB Manager** is a lightweight, cross-platform desktop application designed to simplify local database management for developers. 
 
-In the project directory, you can run:
+Say goodbye to `"port 3306 is already in use"` errors. LocalDB Manager spins up isolated database instances using Docker, ensuring zero port conflicts and keeping your host machine completely clean.
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- 🚀 **Isolated Environments:** Every project runs in its own dedicated Docker container.
+- 🔌 **Smart Port Management:** Automatic local port allocation to prevent overlapping conflicts.
+- 📋 **Framework Ready:** Built-in `.env` connection snippets for frameworks like **Laravel, Next.js, and NestJS**.
+- 🐳 **Engine Compatibility:** Works seamlessly with both **Docker Desktop** and **OrbStack** (macOS).
+- 🗃️ **Integrated Tools:** One-click access to phpMyAdmin for instant data management.
+- 🌙 **Modern UI:** Clean, dark-mode native interface built with React and Electron.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 📦 Installation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+You don't need to build the app from source to use it. You can download the latest compiled version for your operating system:
 
-### `npm run build`
+1. Go to the [Releases](../../releases) page.
+2. Download the appropriate installer for your system:
+   - 🍎 **macOS:** Download the `.dmg` file.
+   - 🪟 **Windows:** Download the `.exe` file.
+   - 🐧 **Linux:** Download the `.AppImage` file.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+> **⚠️ Important Requirement:** You must have **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** or **[OrbStack](https://orbstack.dev/)** installed and running on your machine before opening the application.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🛠️ Local Development
 
-### `npm run eject`
+If you want to contribute, modify the code, or build the application yourself, follow these steps:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Prerequisites
+- Node.js (v16 or higher)
+- Docker Desktop or OrbStack running in the background.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Setup
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. **Clone the repository**
+```bash
+   git clone [https://github.com/VitorVieira20/LocalDB-Manager.git](https://github.com/VitorVieira20/LocalDB-Manager.git)
+   cd LocalDB-Manager
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. **Install dependencies**
+```bash
+npm install
+```
 
-## Learn More
+3. **Run in development mode**
+This command will start both the React frontend server and the Electron backend concurrently:
+```bash
+npm run electron:serve
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Building for Production
+To package the application into distributable files (``.exe``, ``.dmg``, ``.AppImage``):
+```bash
+npm run electron:build
+```
+The compiled files will be generated inside the ``dist/`` directory.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
 
-### Code Splitting
+## 💻 Tech Stack
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **Frontend:** React, React DOM, Web Vitals
+- **Backend/Desktop Environment:** Electron, Node.js
+- **Containerization:** Docker
+- **Build Tools:** Electron Builder, Concurrently
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 📝 License
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
