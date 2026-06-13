@@ -1,5 +1,16 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
+const os = require('os');
+
+if (process.platform === 'darwin') {
+    process.env.PATH = [
+        process.env.PATH,
+        '/usr/local/bin',
+        '/opt/homebrew/bin',
+        `${os.homedir()}/.orbstack/bin`,
+        '/Applications/Docker.app/Contents/Resources/bin'
+    ].join(':');
+}
 
 const store = require('./services/store');
 const docker = require('./services/docker');
@@ -15,7 +26,11 @@ function createWindow() {
         }
     });
 
-    win.loadURL('http://localhost:3000');
+    if (app.isPackaged) {
+        win.loadFile(path.join(__dirname, 'index.html'));
+    } else {
+        win.loadURL('http://localhost:3000');
+    }
 }
 
 app.on('ready', createWindow);
