@@ -6,6 +6,7 @@ import NewDBModal from './components/modals/Database/NewDBModal';
 import EditDBModal from './components/modals/Database/EditDBModal';
 import ResetConfirmModal from './components/modals/ResetConfirm';
 import HelpModal from './components/modals/Help';
+import LogsModal from './components/modals/Logs';
 
 function App() {
   const {
@@ -26,6 +27,8 @@ function App() {
   const [isResetting, setIsResetting] = useState(false);
   const [resetProgress, setResetProgress] = useState('');
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isLogsModalOpen, setIsLogsModalOpen] = useState(false);
+  const [dbForLogs, setDbForLogs] = useState(null);
 
   if (!isDockerRunning) {
     return <DockerErrorScreen />;
@@ -52,6 +55,11 @@ function App() {
   const handleConfirmReset = async () => {
     setIsResetting(true);
     await hardReset((message) => setResetProgress(message));
+  };
+
+  const handleOpenLogs = (dbName) => {
+    setDbForLogs(dbName);
+    setIsLogsModalOpen(true);
   };
 
   return (
@@ -92,6 +100,7 @@ function App() {
                 onDelete={deleteDatabase}
                 onOpenPMA={openPMA}
                 onEdit={handleEditClick}
+                onOpenLogs={handleOpenLogs}
               />
             ))}
           </div>
@@ -122,6 +131,12 @@ function App() {
       <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
+      />
+
+      <LogsModal
+        isOpen={isLogsModalOpen}
+        onClose={() => setIsLogsModalOpen(false)}
+        dbName={dbForLogs}
       />
     </div>
   );

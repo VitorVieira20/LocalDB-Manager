@@ -11,5 +11,13 @@ contextBridge.exposeInMainWorld('dockerAPI', {
     saveData: (data) => ipcRenderer.invoke('app:save-data', data),
     syncStatus: (databases) => ipcRenderer.invoke('app:sync-status', databases),
     resetApp: () => ipcRenderer.invoke('app:reset'),
-    checkDocker: () => ipcRenderer.invoke('docker:check')
+    checkDocker: () => ipcRenderer.invoke('docker:check'),
+    openLogs: (containerName) => ipcRenderer.send('docker:logs', containerName),
+    stopLogs: (containerName) => ipcRenderer.send('docker:stop-logs', containerName),
+    onLogData: (containerName, callback) => {
+        const channel = `logs-data-${containerName}`;
+        const listener = (event, data) => callback(data);
+        ipcRenderer.on(channel, listener);
+        return () => ipcRenderer.removeListener(channel, listener);
+    }
 });

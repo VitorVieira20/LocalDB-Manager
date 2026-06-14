@@ -8,7 +8,7 @@ const Spinner = () => (
     </svg>
 );
 
-const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit }) => {
+const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit, onOpenLogs }) => {
     const [loadingAction, setLoadingAction] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -93,6 +93,13 @@ const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit }) => {
                     </button>
 
                     <button
+                        onClick={() => onOpenLogs(db.name)}
+                        style={styles.logsBtn}
+                    >
+                        View Logs
+                    </button>
+
+                    <button
                         onClick={handleDeleteClick}
                         disabled={isBusy}
                         style={{ ...styles.dangerButton, ...(isBusy ? styles.buttonDisabled : {}) }}
@@ -127,8 +134,9 @@ const styles = {
     pmaButton: { backgroundColor: 'transparent', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' },
     secondaryButton: { backgroundColor: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' },
     dangerButton: { backgroundColor: 'transparent', color: 'var(--state-error)', border: '1px solid transparent', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' },
-    buttonDisabled: { opacity: 0.3, cursor: 'not-allowed', borderColor: 'var(--border-color)' }, 
-    btnContent: { display: 'flex', alignItems: 'center', justifyContent: 'center' }
+    buttonDisabled: { opacity: 0.3, cursor: 'not-allowed', borderColor: 'var(--border-color)' },
+    btnContent: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    logsBtn: { backgroundColor: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }
 };
 
 export default DatabaseCard;

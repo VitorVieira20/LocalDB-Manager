@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const os = require('os');
+const { spawn } = require('child_process');
 
 if (process.platform === 'darwin') {
     process.env.PATH = [
@@ -65,3 +66,33 @@ ipcMain.handle('docker:update', (event, data) => docker.updateProject(data.oldNa
 ipcMain.handle('docker:start', (event, projectName) => docker.startProject(projectName));
 ipcMain.handle('docker:stop', (event, projectName) => docker.stopProject(projectName));
 ipcMain.handle('docker:delete', (event, projectName) => docker.deleteProject(projectName));
+
+let activeLogStreams = {};
+
+ipcMain.on('docker:logs', (event, containerName) => {
+    if (activeLogStreams[containerName]) {
+        activeLogStreams[containerName].kill();
+    }
+
+    const logStream = spawn('docker', ['logs', '-f', containerName]);
+    activeLogStreams[containerName] = logStream;
+
+    logStream.stdout.on('data', (data) => {
+        event.sender.send(`logs-data-${containerName}`, data.toString());
+    });
+
+    logStream.stderr.on('data', (data) => {
+        event.sender.send(`logs-data-${containerName}`, data.toString());
+    });
+
+    logStream.on('close', () => {
+        delete activeLogStreams[containerName];
+    });
+});
+
+ipcMain.on('docker:stop-logs', (event, containerName) => {
+    if (activeLogStreams[containerName]) {
+        activeLogStreams[containerName].kill();
+        delete activeLogStreams[containerName];
+    }
+});
