@@ -7,6 +7,7 @@ import EditDBModal from './components/modals/Database/EditDBModal';
 import ResetConfirmModal from './components/modals/ResetConfirm';
 import HelpModal from './components/modals/Help';
 import LogsModal from './components/modals/Logs';
+import OnboardingScreen from './components/layout/OnboardingScreen';
 
 function App() {
   const {
@@ -29,6 +30,20 @@ function App() {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isLogsModalOpen, setIsLogsModalOpen] = useState(false);
   const [dbForLogs, setDbForLogs] = useState(null);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
+    localStorage.getItem('hasSeenOnboarding') === 'true'
+  );
+
+  if (!hasSeenOnboarding) {
+    return (
+      <OnboardingScreen
+        onComplete={() => {
+          localStorage.setItem('hasSeenOnboarding', 'true');
+          setHasSeenOnboarding(true);
+        }}
+      />
+    );
+  }
 
   if (!isDockerRunning) {
     return <DockerErrorScreen />;
