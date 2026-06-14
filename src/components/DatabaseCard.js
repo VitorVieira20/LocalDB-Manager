@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import DeleteConfirmModal from './modals/Database/DeleteConfirmModal';
 
+const ENGINE_LABELS = {
+    mysql: { title: 'MySQL', manager: 'Open phpMyAdmin', color: '#0ea5e9', login: 'root' },
+    postgres: { title: 'PostgreSQL', manager: 'Open pgAdmin', color: '#3b82f6', login: 'admin@localdb.com' },
+    mongodb: { title: 'MongoDB', manager: 'Open Mongo Express', color: '#10b981', login: 'root' }
+};
+
 const Spinner = () => (
     <svg className="animate-spin" style={{ width: 14, height: 14, marginRight: 6 }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeOpacity="0.25"></circle>
@@ -13,6 +19,11 @@ const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit, onOpenL
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const isRunning = db.status === 'running';
+    const engineKey = db.engine || 'mysql';
+    const uiData = ENGINE_LABELS[engineKey];
+
+    const actDbPort = db.dbPort || db.mysqlPort;
+    const actUiPort = db.uiPort || db.pmaPort;
 
     const handleToggle = async () => {
         setLoadingAction('toggle');
@@ -51,9 +62,15 @@ const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit, onOpenL
                     <div>
                         <h3 style={styles.name}>{db.name}</h3>
                         <div style={styles.portsGroup}>
-                            <span className="mono" style={styles.port}>MySQL: {db.mysqlPort}</span>
+                            <span className="mono" style={{ ...styles.port, color: uiData.color, fontWeight: 'bold' }}>{uiData.title}</span>
                             <span style={styles.divider}>|</span>
-                            <span className="mono" style={styles.port}>PMA: {db.pmaPort}</span>
+                            <span className="mono" style={styles.port}>Port: {actDbPort}</span>
+                            <span style={styles.divider}>|</span>
+                            <span className="mono" style={styles.port}>UI: {actUiPort}</span>
+                            <span style={styles.divider}>|</span>
+                            <span className="mono" style={styles.port} title="Use the password you defined during creation">
+                                User: <strong style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{uiData.login}</strong>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -64,10 +81,12 @@ const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit, onOpenL
                         disabled={!isRunning || isBusy}
                         style={{
                             ...styles.pmaButton,
+                            borderColor: uiData.color,
+                            color: uiData.color,
                             ...((!isRunning || isBusy) ? styles.buttonDisabled : {})
                         }}
                     >
-                        Open phpMyAdmin
+                        {uiData.manager}
                     </button>
 
                     <button
@@ -93,7 +112,7 @@ const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit, onOpenL
                     </button>
 
                     <button
-                        onClick={() => onOpenLogs(db.name)}
+                        onClick={() => onOpenLogs(db)}
                         style={styles.logsBtn}
                     >
                         View Logs

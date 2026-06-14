@@ -51,9 +51,10 @@ export function useDatabases() {
                 const newDb = {
                     id: Date.now(),
                     name: dbData.name,
+                    engine: dbData.engine || 'mysql',
                     status: 'running',
-                    mysqlPort: response.mysqlPort,
-                    pmaPort: response.pmaPort,
+                    dbPort: response.dbPort,
+                    uiPort: response.uiPort,
                 };
                 await updateAndSaveDatabases([...databases, newDb]);
                 return true;
@@ -93,7 +94,12 @@ export function useDatabases() {
         const response = await window.dockerAPI.updateInstance(updateData);
         if (response.success) {
             const newList = databases.map(db =>
-                db.name === updateData.oldName ? { ...db, name: updateData.newName } : db
+                db.name === updateData.oldName ? {
+                    ...db,
+                    name: updateData.newName,
+                    dbPort: response.dbPort,
+                    uiPort: response.uiPort
+                } : db
             );
             await updateAndSaveDatabases(newList);
             return true;
@@ -121,7 +127,8 @@ export function useDatabases() {
     };
 
     const openPMA = (db) => {
-        const url = `http://localhost:${db.pmaPort}`;
+        const port = db.uiPort || db.pmaPort;
+        const url = `http://localhost:${port}`;
         window.dockerAPI.openBrowser(url);
     };
 

@@ -1,16 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const NewDBModal = ({ isOpen, onClose, onSubmit }) => {
     const [projectName, setProjectName] = useState('');
     const [password, setPassword] = useState('');
+    const [engine, setEngine] = useState('mysql');
+
+    useEffect(() => {
+        if (!isOpen) {
+            setProjectName('');
+            setPassword('');
+            setEngine('mysql');
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit({ name: projectName, password });
+        onSubmit({ name: projectName, password, engine });
         setProjectName('');
         setPassword('');
+        setEngine('mysql');
         onClose();
     };
 
@@ -18,7 +28,7 @@ const NewDBModal = ({ isOpen, onClose, onSubmit }) => {
         <div style={styles.overlay}>
             <div style={styles.modal}>
                 <h2 style={styles.title}>New Database</h2>
-                <p style={styles.subtitle}>Define the details for your new MySQL instance.</p>
+                <p style={styles.subtitle}>Define the details for your new local instance.</p>
 
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.inputGroup}>
@@ -34,7 +44,20 @@ const NewDBModal = ({ isOpen, onClose, onSubmit }) => {
                     </div>
 
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>Root Password (MySQL)</label>
+                        <label style={styles.label}>Database Engine</label>
+                        <select
+                            value={engine}
+                            onChange={(e) => setEngine(e.target.value)}
+                            style={styles.input}
+                        >
+                            <option value="mysql">MySQL 8.0</option>
+                            <option value="postgres">PostgreSQL 15</option>
+                            <option value="mongodb">MongoDB (Latest)</option>
+                        </select>
+                    </div>
+
+                    <div style={styles.inputGroup}>
+                        <label style={styles.label}>Root Password (Required)</label>
                         <input
                             type="password"
                             required
@@ -46,12 +69,8 @@ const NewDBModal = ({ isOpen, onClose, onSubmit }) => {
                     </div>
 
                     <div style={styles.footer}>
-                        <button type="button" onClick={onClose} style={styles.cancelButton}>
-                            Cancel
-                        </button>
-                        <button type="submit" style={styles.submitButton}>
-                            Create Instance
-                        </button>
+                        <button type="button" onClick={onClose} style={styles.cancelButton}>Cancel</button>
+                        <button type="submit" style={styles.submitButton}>Create Instance</button>
                     </div>
                 </form>
             </div>
@@ -63,7 +82,7 @@ const styles = {
     overlay: {
         position: 'fixed',
         top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(11, 17, 32, 0.75)', 
+        backgroundColor: 'rgba(11, 17, 32, 0.75)',
         backdropFilter: 'blur(4px)',
         display: 'flex',
         alignItems: 'center',

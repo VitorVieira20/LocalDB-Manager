@@ -57,12 +57,12 @@ ipcMain.handle('app:sync-status', (event, databases) => docker.syncStatus(databa
 
 ipcMain.handle('docker:create', async (event, dbData) => {
     try {
-        return await docker.setupProject(dbData.name, dbData.password);
+        return await docker.setupProject(dbData.name, dbData.password, dbData.engine);
     } catch (error) {
         return { success: false, error: error.message };
     }
 });
-ipcMain.handle('docker:update', (event, data) => docker.updateProject(data.oldName, data.newName, data.password));
+ipcMain.handle('docker:update', (event, data) => docker.updateProject(data.oldName, data.newName, data.password, data.engine));
 ipcMain.handle('docker:start', (event, projectName) => docker.startProject(projectName));
 ipcMain.handle('docker:stop', (event, projectName) => docker.stopProject(projectName));
 ipcMain.handle('docker:delete', (event, projectName) => docker.deleteProject(projectName));

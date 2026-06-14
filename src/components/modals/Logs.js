@@ -1,16 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 
-function LogsModal({ isOpen, onClose, dbName }) {
+const ENGINE_CONFIG = {
+    mysql: { dbSuffix: 'mysql', uiSuffix: 'pma', dbLabel: 'MySQL Engine', uiLabel: 'phpMyAdmin' },
+    postgres: { dbSuffix: 'postgres', uiSuffix: 'pgadmin', dbLabel: 'PostgreSQL Engine', uiLabel: 'pgAdmin' },
+    mongodb: { dbSuffix: 'mongodb', uiSuffix: 'mongoexpress', dbLabel: 'MongoDB Engine', uiLabel: 'Mongo Express' }
+};
+
+function LogsModal({ isOpen, onClose, db }) {
     const [logs, setLogs] = useState('');
-    const [activeTab, setActiveTab] = useState('mysql');
+    const [activeTab, setActiveTab] = useState('db');
     const logsEndRef = useRef(null);
 
     useEffect(() => {
-        if (!isOpen || !dbName) return;
+        if (!isOpen || !db) return;
 
         setLogs('');
 
-        const containerName = `localdb_${dbName}_${activeTab}`;
+        // Descobre qual é o engine atual (com fallback seguro para mysql)
+        const engineKey = db.engine || 'mysql';
+        const config = ENGINE_CONFIG[engineKey];
+
+        // Constrói o nome do contentor baseado na tab genérica
+        const suffix = activeTab === 'db' ? config.dbSuffix : config.uiSuffix;
+        const containerName = `localdb_${db.name}_${suffix}`;
 
         window.dockerAPI.openLogs(containerName);
 
@@ -22,7 +34,7 @@ function LogsModal({ isOpen, onClose, dbName }) {
             cleanupListener();
             window.dockerAPI.stopLogs(containerName);
         };
-    }, [isOpen, dbName, activeTab]);
+    }, [isOpen, db, activeTab]);
 
     useEffect(() => {
         if (logsEndRef.current) {
@@ -30,28 +42,31 @@ function LogsModal({ isOpen, onClose, dbName }) {
         }
     }, [logs]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !db) return null;
+
+    const engineKey = db.engine || 'mysql';
+    const config = ENGINE_CONFIG[engineKey];
 
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
                 <div style={styles.header}>
-                    <h2 style={styles.title}>Real-time Logs: {dbName}</h2>
+                    <h2 style={styles.title}>Real-time Logs: {db.name}</h2>
                     <button onClick={onClose} style={styles.closeBtn}>&times;</button>
                 </div>
 
                 <div style={styles.tabs}>
                     <button
-                        style={activeTab === 'mysql' ? styles.activeTab : styles.tab}
-                        onClick={() => setActiveTab('mysql')}
+                        style={activeTab === 'db' ? styles.activeTab : styles.tab}
+                        onClick={() => setActiveTab('db')}
                     >
-                        MySQL Engine
+                        {config.dbLabel}
                     </button>
                     <button
-                        style={activeTab === 'pma' ? styles.activeTab : styles.tab}
-                        onClick={() => setActiveTab('pma')}
+                        style={activeTab === 'ui' ? styles.activeTab : styles.tab}
+                        onClick={() => setActiveTab('ui')}
                     >
-                        phpMyAdmin
+                        {config.uiLabel}
                     </button>
                 </div>
 

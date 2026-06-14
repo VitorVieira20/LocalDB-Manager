@@ -8,14 +8,16 @@ const { findAvailablePort } = require('./utils');
 
 const getComposePath = (projectName) => path.join(app.getPath('userData'), 'instances', projectName, 'docker-compose.yml');
 
-async function setupProject(name, password) {
+async function setupProject(name, password, engine = 'mysql') {
     const projectDir = path.join(app.getPath('userData'), 'instances', name);
     await fs.mkdir(projectDir, { recursive: true });
 
-    const mysqlPort = await findAvailablePort(3306, 3400);
-    const pmaPort = await findAvailablePort(8080, 8100);
+    let dbPort, uiPort, composeYAML;
 
-    const composeYAML = `
+    if (engine === 'mysql') {
+        dbPort = await findAvailablePort(3306, 3400);
+        uiPort = await findAvailablePort(8080, 8100);
+        composeYAML = `
 services:
   database:
     image: mysql:8.0
@@ -24,11 +26,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: '${password}'
     ports:
-      - '${mysqlPort}:3306'
+      - '${dbPort}:3306'
     volumes:
       - localdb_${name}_data:/var/lib/mysql
 
-  phpmyadmin:
+  manager:
     image: phpmyadmin/phpmyadmin
     container_name: localdb_${name}_pma
     restart: always
@@ -36,20 +38,86 @@ services:
       PMA_HOST: database
       PMA_PORT: 3306
     ports:
-      - '${pmaPort}:80'
+      - '${uiPort}:80'
     depends_on:
       - database
 
 volumes:
   localdb_${name}_data:
-    name: localdb_${name}_data
-`;
+    name: localdb_${name}_data`;
+
+    } else if (engine === 'postgres') {
+        dbPort = await findAvailablePort(5432, 5500);
+        uiPort = await findAvailablePort(5050, 5100);
+        composeYAML = `
+services:
+  database:
+    image: postgres:15
+    container_name: localdb_${name}_postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: '${password}'
+    ports:
+      - '${dbPort}:5432'
+    volumes:
+      - localdb_${name}_data:/var/lib/postgresql/data
+
+  manager:
+    image: dpage/pgadmin4
+    container_name: localdb_${name}_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'admin@localdb.com'
+      PGADMIN_DEFAULT_PASSWORD: '${password}'
+    ports:
+      - '${uiPort}:80'
+    depends_on:
+      - database
+
+volumes:
+  localdb_${name}_data:
+    name: localdb_${name}_data`;
+
+    } else if (engine === 'mongodb') {
+        dbPort = await findAvailablePort(27017, 27100);
+        uiPort = await findAvailablePort(8081, 8200);
+        composeYAML = `
+services:
+  database:
+    image: mongo:latest
+    container_name: localdb_${name}_mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: 'root'
+      MONGO_INITDB_ROOT_PASSWORD: '${password}'
+    ports:
+      - '${dbPort}:27017'
+    volumes:
+      - localdb_${name}_data:/data/db
+
+  manager:
+    image: mongo-express:latest
+    container_name: localdb_${name}_mongoexpress
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_URL: 'mongodb://root:${password}@database:27017/'
+      ME_CONFIG_BASICAUTH_USERNAME: 'root'
+      ME_CONFIG_BASICAUTH_PASSWORD: '${password}'
+    ports:
+      - '${uiPort}:8081'
+    depends_on:
+      - database
+
+volumes:
+  localdb_${name}_data:
+    name: localdb_${name}_data`;
+    }
 
     const composePath = path.join(projectDir, 'docker-compose.yml');
     await fs.writeFile(composePath, composeYAML.trim());
     await execAsync(`docker compose -f "${composePath}" up -d`);
 
-    return { success: true, name, mysqlPort, pmaPort };
+    return { success: true, name, dbPort, uiPort, engine };
 }
 
 async function startProject(projectName) {
@@ -82,7 +150,7 @@ async function deleteProject(projectName) {
     }
 }
 
-async function updateProject(oldName, newName, password) {
+async function updateProject(oldName, newName, password, engine) {
     try {
         const instancesPath = path.join(app.getPath('userData'), 'instances');
 
@@ -99,7 +167,7 @@ async function updateProject(oldName, newName, password) {
             console.log("Containers antigos não encontrados, a avançar...");
         }
 
-        return await setupProject(newName, password);
+        return await setupProject(newName, password, engine);
     } catch (error) {
         return { success: false, error: error.message };
     }
@@ -108,7 +176,8 @@ async function updateProject(oldName, newName, password) {
 async function syncStatus(databases) {
     return await Promise.all(databases.map(async (db) => {
         try {
-            const { stdout } = await execAsync(`docker inspect -f '{{.State.Running}}' localdb_${db.name}_mysql`);
+            const engineType = db.engine || 'mysql';
+            const { stdout } = await execAsync(`docker inspect -f '{{.State.Running}}' localdb_${db.name}_${engineType}`);
             const isRunning = stdout.trim() === 'true';
             return { ...db, status: isRunning ? 'running' : 'stopped' };
         } catch (error) {

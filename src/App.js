@@ -72,8 +72,8 @@ function App() {
     await hardReset((message) => setResetProgress(message));
   };
 
-  const handleOpenLogs = (dbName) => {
-    setDbForLogs(dbName);
+  const handleOpenLogs = (db) => {
+    setDbForLogs(db);
     setIsLogsModalOpen(true);
   };
 
@@ -151,7 +151,7 @@ function App() {
       <LogsModal
         isOpen={isLogsModalOpen}
         onClose={() => setIsLogsModalOpen(false)}
-        dbName={dbForLogs}
+        db={dbForLogs}
       />
     </div>
   );
