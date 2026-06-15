@@ -6,6 +6,7 @@
 - **Onboarding Experience:** Introduced a first-time setup wizard to verify system requirements (Docker/OrbStack) and explain core concepts.
 - **Real-Time Logs Viewer:** Added a built-in terminal UI to stream live Docker logs from both the database and the UI manager containers.
 - **Default Credentials Display:** Added default login user information directly to the Database Card for easier access.
+- **Password Safety:** Added a "Confirm Password" field and a "Show/Hide" visibility toggle to both the Create and Edit database modals to prevent typos.
 
 ### Changed
 - **Responsive Design:** Refactored the main header and Database Cards using Flexbox to gracefully wrap and adapt to smaller window sizes.
