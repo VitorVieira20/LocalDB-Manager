@@ -14,11 +14,12 @@ const HelpModal = ({ isOpen, onClose }) => {
                         <h3 style={styles.sectionTitle}>1. The Basics</h3>
                         <p style={styles.text}>
                             Every database you create runs in its own isolated Docker container.
-                            This means there are no port conflicts, and your computer stays clean.
+                            We currently support <strong>MySQL, PostgreSQL, and MongoDB</strong>.
+                            This means there are no port conflicts, and your computer stays perfectly clean.
                         </p>
                         <div style={styles.tipBox}>
-                            <strong>Pro Tip:</strong> Your MySQL instance starts completely empty.
-                            Click <strong>"Open phpMyAdmin"</strong> to create your specific database tables before connecting your app!
+                            <strong>Pro Tip:</strong> Your instances start completely empty.
+                            Click the UI manager button (phpMyAdmin, pgAdmin, or Mongo Express) to create your specific database tables or collections before connecting your app! Use the <strong>View Logs</strong> button if you need to debug the startup process.
                         </div>
                     </section>
 
@@ -26,32 +27,36 @@ const HelpModal = ({ isOpen, onClose }) => {
                         <h3 style={styles.sectionTitle}>2. Connection Credentials</h3>
                         <ul style={styles.list}>
                             <li><strong>Host:</strong> <code>127.0.0.1</code> or <code>localhost</code></li>
-                            <li><strong>Username:</strong> <code>root</code></li>
-                            <li><strong>Password:</strong> The password you defined when creating the instance</li>
-                            <li><strong>Port:</strong> The specific <strong>MySQL Port</strong> shown on the project card</li>
+                            <li><strong>Username:</strong> Check the <strong>User</strong> label on your project card (e.g., <code>root</code> or <code>admin@localdb.com</code>).</li>
+                            <li><strong>Password:</strong> The password you defined when creating the instance.</li>
+                            <li><strong>Port:</strong> The specific <strong>Port</strong> shown on the project card.</li>
                         </ul>
                     </section>
 
                     <section style={styles.section}>
                         <h3 style={styles.sectionTitle}>3. Environment Setup (.env)</h3>
-                        <p style={styles.text}>Replace <code>&lt;PORT&gt;</code> and <code>&lt;PASSWORD&gt;</code> with your card's details:</p>
+                        <p style={styles.text}>Replace <code>&lt;PORT&gt;</code>, <code>&lt;USER&gt;</code>, and <code>&lt;PASSWORD&gt;</code> with your card's details:</p>
 
                         <div style={styles.codeBlockWrapper}>
-                            <span style={styles.codeLabel}>Laravel</span>
+                            <span style={styles.codeLabel}>Laravel (MySQL / PostgreSQL)</span>
                             <pre style={styles.codeBlock}>
-                                {`DB_CONNECTION=mysql
+                                {`DB_CONNECTION=mysql # or pgsql
 DB_HOST=127.0.0.1
 DB_PORT=<PORT>
 DB_DATABASE=my_database_name
-DB_USERNAME=root
+DB_USERNAME=<USER>
 DB_PASSWORD=<PASSWORD>`}
                             </pre>
                         </div>
 
                         <div style={styles.codeBlockWrapper}>
-                            <span style={styles.codeLabel}>Next.js (Prisma)</span>
+                            <span style={styles.codeLabel}>Next.js / Node.js (Prisma URL)</span>
                             <pre style={styles.codeBlock}>
-                                {`DATABASE_URL="mysql://root:<PASSWORD>@localhost:<PORT>/my_database_name"`}
+                                {`# MySQL or PostgreSQL
+DATABASE_URL="mysql://<USER>:<PASSWORD>@localhost:<PORT>/my_database_name"
+
+# MongoDB
+DATABASE_URL="mongodb://<USER>:<PASSWORD>@localhost:<PORT>/my_database?authSource=admin"`}
                             </pre>
                         </div>
 
@@ -60,7 +65,7 @@ DB_PASSWORD=<PASSWORD>`}
                             <pre style={styles.codeBlock}>
                                 {`DB_HOST=127.0.0.1
 DB_PORT=<PORT>
-DB_USERNAME=root
+DB_USERNAME=<USER>
 DB_PASSWORD=<PASSWORD>
 DB_DATABASE=my_database_name`}
                             </pre>

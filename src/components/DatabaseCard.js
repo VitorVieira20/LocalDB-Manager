@@ -142,14 +142,14 @@ const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit, onOpenL
 };
 
 const styles = {
-    card: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px' },
-    infoGroup: { display: 'flex', alignItems: 'center', gap: '16px' },
-    statusDot: { width: '10px', height: '10px', borderRadius: '50%', transition: 'all 0.3s ease' },
-    name: { fontSize: '16px', fontWeight: '600', marginBottom: '4px' },
-    portsGroup: { display: 'flex', alignItems: 'center', gap: '8px' },
+    card: { display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: '8px' },
+    infoGroup: { display: 'flex', alignItems: 'flex-start', gap: '16px', flex: '1 1 250px' },
+    statusDot: { width: '10px', height: '10px', borderRadius: '50%', transition: 'all 0.3s ease', marginTop: '6px', flexShrink: 0 },
+    name: { fontSize: '16px', fontWeight: '600', margin: '0 0 4px 0' },
+    portsGroup: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: '8px', rowGap: '6px' },
     port: { fontSize: '12px', color: 'var(--text-secondary)' },
     divider: { color: 'var(--border-color)', fontSize: '12px' },
-    actionGroup: { display: 'flex', alignItems: 'center', gap: '8px' },
+    actionGroup: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' },
     pmaButton: { backgroundColor: 'transparent', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' },
     secondaryButton: { backgroundColor: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' },
     dangerButton: { backgroundColor: 'transparent', color: 'var(--state-error)', border: '1px solid transparent', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', fontSize: '13px', transition: 'all 0.2s' },
@@ -157,5 +157,4 @@ const styles = {
     btnContent: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
     logsBtn: { backgroundColor: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }
 };
-
 export default DatabaseCard;

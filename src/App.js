@@ -159,8 +159,8 @@ function App() {
 
 const styles = {
   container: { display: 'flex', flexDirection: 'column', height: '100vh', padding: '32px' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border-color)' },
-  buttonGroup: { display: 'flex', gap: '12px', alignItems: 'center' },
+  header: { display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border-color)' },
+  buttonGroup: { display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' },
   title: { fontSize: '24px', fontWeight: '700', letterSpacing: '-0.5px' },
   subtitle: { color: 'var(--text-secondary)', fontSize: '14px', marginTop: '6px' },
   primaryButton: { backgroundColor: 'var(--accent-primary)', color: '#0F172A', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'opacity 0.2s' },
