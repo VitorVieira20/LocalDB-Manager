@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DeleteConfirmModal from './modals/Database/DeleteConfirmModal';
 
 const ENGINE_LABELS = {
@@ -17,6 +17,24 @@ const Spinner = () => (
 const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit, onOpenLogs }) => {
     const [loadingAction, setLoadingAction] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [stats, setStats] = useState({ cpu: '--', ram: '--' });
+
+    useEffect(() => {
+        let interval;
+        if (db.status === 'running') {
+            const fetchStats = async () => {
+                const engineKey = db.engine || 'mysql';
+                const containerName = `localdb_${db.name}_${engineKey}`;
+                const data = await window.dockerAPI.getStats(containerName);
+                if (data) setStats(data);
+            };
+            fetchStats();
+            interval = setInterval(fetchStats, 3000);
+        } else {
+            setStats({ cpu: '0.00%', ram: '0B' });
+        }
+        return () => clearInterval(interval);
+    }, [db.status, db.name, db.engine]);
 
     const isRunning = db.status === 'running';
     const engineKey = db.engine || 'mysql';
@@ -71,6 +89,9 @@ const DatabaseCard = ({ db, onToggleStatus, onDelete, onOpenPMA, onEdit, onOpenL
                             <span className="mono" style={styles.port} title="Use the password you defined during creation">
                                 User: <strong style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{uiData.login}</strong>
                             </span>
+                            <span style={styles.divider}>|</span>
+                            <span className="mono" style={{ ...styles.port, color: 'var(--state-running)' }}>CPU: {stats.cpu}</span>
+                            <span className="mono" style={{ ...styles.port, color: 'var(--accent-primary)' }}>RAM: {stats.ram ? stats.ram.split(' / ')[0] : '--'}</span>
                         </div>
                     </div>
                 </div>

@@ -5,19 +5,23 @@ const { exec } = require('child_process');
 const util = require('util');
 const execAsync = util.promisify(exec);
 const { findAvailablePort } = require('./utils');
+const store = require('./store');
 
 const getComposePath = (projectName) => path.join(app.getPath('userData'), 'instances', projectName, 'docker-compose.yml');
 
 async function setupProject(name, password, engine = 'mysql') {
-    const projectDir = path.join(app.getPath('userData'), 'instances', name);
-    await fs.mkdir(projectDir, { recursive: true });
+  const projectDir = path.join(app.getPath('userData'), 'instances', name);
+  await fs.mkdir(projectDir, { recursive: true });
 
-    let dbPort, uiPort, composeYAML;
+  const settings = await store.loadSettings();
 
-    if (engine === 'mysql') {
-        dbPort = await findAvailablePort(3306, 3400);
-        uiPort = await findAvailablePort(8080, 8100);
-        composeYAML = `
+  let dbPort, uiPort, composeYAML;
+
+  if (engine === 'mysql') {
+    const basePort = Number(settings.mysqlPort) || 3306;
+    dbPort = await findAvailablePort(basePort, basePort + 100);
+    uiPort = await findAvailablePort(8080, 8100);
+    composeYAML = `
 services:
   database:
     image: mysql:8.0
@@ -46,10 +50,11 @@ volumes:
   localdb_${name}_data:
     name: localdb_${name}_data`;
 
-    } else if (engine === 'postgres') {
-        dbPort = await findAvailablePort(5432, 5500);
-        uiPort = await findAvailablePort(5050, 5100);
-        composeYAML = `
+  } else if (engine === 'postgres') {
+    const basePort = Number(settings.postgresPort) || 5432;
+    dbPort = await findAvailablePort(basePort, basePort + 100);
+    uiPort = await findAvailablePort(5050, 5100);
+    composeYAML = `
 services:
   database:
     image: postgres:15
@@ -78,10 +83,11 @@ volumes:
   localdb_${name}_data:
     name: localdb_${name}_data`;
 
-    } else if (engine === 'mongodb') {
-        dbPort = await findAvailablePort(27017, 27100);
-        uiPort = await findAvailablePort(8081, 8200);
-        composeYAML = `
+  } else if (engine === 'mongodb') {
+    const basePort = Number(settings.mongoPort) || 27017;
+    dbPort = await findAvailablePort(basePort, basePort + 100);
+    uiPort = await findAvailablePort(8081, 8200);
+    composeYAML = `
 services:
   database:
     image: mongo:latest
@@ -111,96 +117,106 @@ services:
 volumes:
   localdb_${name}_data:
     name: localdb_${name}_data`;
-    }
+  }
 
-    const composePath = path.join(projectDir, 'docker-compose.yml');
-    await fs.writeFile(composePath, composeYAML.trim());
-    await execAsync(`docker compose -f "${composePath}" up -d`);
+  const composePath = path.join(projectDir, 'docker-compose.yml');
+  await fs.writeFile(composePath, composeYAML.trim());
+  await execAsync(`docker compose -f "${composePath}" up -d`);
 
-    return { success: true, name, dbPort, uiPort, engine };
+  return { success: true, name, dbPort, uiPort, engine };
 }
 
 async function startProject(projectName) {
-    try {
-        await execAsync(`docker compose -f "${getComposePath(projectName)}" start`);
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
+  try {
+    await execAsync(`docker compose -f "${getComposePath(projectName)}" start`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
 
 async function stopProject(projectName) {
-    try {
-        await execAsync(`docker compose -f "${getComposePath(projectName)}" stop`);
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
+  try {
+    await execAsync(`docker compose -f "${getComposePath(projectName)}" stop`);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
 
 async function deleteProject(projectName) {
-    try {
-        const composePath = getComposePath(projectName);
-        const projectDir = path.join(app.getPath('userData'), 'instances', projectName);
-        await execAsync(`docker compose -f "${composePath}" down -v`);
-        await fs.rm(projectDir, { recursive: true, force: true });
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
+  try {
+    const composePath = getComposePath(projectName);
+    const projectDir = path.join(app.getPath('userData'), 'instances', projectName);
+    await execAsync(`docker compose -f "${composePath}" down -v`);
+    await fs.rm(projectDir, { recursive: true, force: true });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
 
 async function updateProject(oldName, newName, password, engine) {
-    try {
-        const instancesPath = path.join(app.getPath('userData'), 'instances');
+  try {
+    const instancesPath = path.join(app.getPath('userData'), 'instances');
 
-        if (oldName !== newName) {
-            const exists = await fs.access(path.join(instancesPath, newName)).then(() => true).catch(() => false);
-            if (exists) throw new Error("A project with this name already exists.");
-        }
-
-        const oldComposePath = path.join(instancesPath, oldName, 'docker-compose.yml');
-        try {
-            await execAsync(`docker compose -f "${oldComposePath}" down -v`);
-            await fs.rm(path.join(instancesPath, oldName), { recursive: true });
-        } catch (e) {
-            console.log("Containers antigos não encontrados, a avançar...");
-        }
-
-        return await setupProject(newName, password, engine);
-    } catch (error) {
-        return { success: false, error: error.message };
+    if (oldName !== newName) {
+      const exists = await fs.access(path.join(instancesPath, newName)).then(() => true).catch(() => false);
+      if (exists) throw new Error("A project with this name already exists.");
     }
+
+    const oldComposePath = path.join(instancesPath, oldName, 'docker-compose.yml');
+    try {
+      await execAsync(`docker compose -f "${oldComposePath}" down -v`);
+      await fs.rm(path.join(instancesPath, oldName), { recursive: true });
+    } catch (e) {
+      console.log("Containers antigos não encontrados, a avançar...");
+    }
+
+    return await setupProject(newName, password, engine);
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 }
 
 async function syncStatus(databases) {
-    return await Promise.all(databases.map(async (db) => {
-        try {
-            const engineType = db.engine || 'mysql';
-            const { stdout } = await execAsync(`docker inspect -f '{{.State.Running}}' localdb_${db.name}_${engineType}`);
-            const isRunning = stdout.trim() === 'true';
-            return { ...db, status: isRunning ? 'running' : 'stopped' };
-        } catch (error) {
-            return { ...db, status: 'stopped' };
-        }
-    }));
+  return await Promise.all(databases.map(async (db) => {
+    try {
+      const engineType = db.engine || 'mysql';
+      const { stdout } = await execAsync(`docker inspect -f '{{.State.Running}}' localdb_${db.name}_${engineType}`);
+      const isRunning = stdout.trim() === 'true';
+      return { ...db, status: isRunning ? 'running' : 'stopped' };
+    } catch (error) {
+      return { ...db, status: 'stopped' };
+    }
+  }));
 }
 
 async function checkDocker() {
-    try {
-        await execAsync('docker info');
-        return { isRunning: true };
-    } catch (error) {
-        return { isRunning: false };
-    }
+  try {
+    await execAsync('docker info');
+    return { isRunning: true };
+  } catch (error) {
+    return { isRunning: false };
+  }
+}
+
+async function getStats(containerName) {
+  try {
+    const { stdout } = await execAsync(`docker stats ${containerName} --no-stream --format '{"cpu":"{{.CPUPerc}}","ram":"{{.MemUsage}}"}'`);
+    return JSON.parse(stdout.trim());
+  } catch (error) {
+    return { cpu: '0.00%', ram: '0B / 0B' };
+  }
 }
 
 module.exports = {
-    setupProject,
-    startProject,
-    stopProject,
-    deleteProject,
-    updateProject,
-    syncStatus,
-    checkDocker
+  setupProject,
+  startProject,
+  stopProject,
+  deleteProject,
+  updateProject,
+  syncStatus,
+  checkDocker,
+  getStats
 };

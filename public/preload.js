@@ -19,5 +19,13 @@ contextBridge.exposeInMainWorld('dockerAPI', {
         const listener = (event, data) => callback(data);
         ipcRenderer.on(channel, listener);
         return () => ipcRenderer.removeListener(channel, listener);
-    }
+    },
+    getStats: (containerName) => ipcRenderer.invoke('docker:stats', containerName),
+    updateTray: (databases) => ipcRenderer.send('app:update-tray', databases),
+    onTrayToggle: (callback) => {
+        ipcRenderer.removeAllListeners('tray:toggle-db');
+        ipcRenderer.on('tray:toggle-db', (event, dbId) => callback(dbId));
+    },
+    loadSettings: () => ipcRenderer.invoke('app:load-settings'),
+    saveSettings: (settings) => ipcRenderer.invoke('app:save-settings', settings),
 });

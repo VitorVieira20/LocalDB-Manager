@@ -6,6 +6,7 @@ const util = require('util');
 const execAsync = util.promisify(exec);
 
 const getDataFilePath = () => path.join(app.getPath('userData'), 'instances', 'data.json');
+const getSettingsFilePath = () => path.join(app.getPath('userData'), 'instances', 'settings.json');
 
 async function loadData() {
     try {
@@ -24,6 +25,27 @@ async function saveData(data) {
         return { success: true };
     } catch (error) {
         console.error('Erro ao guardar data.json:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+async function loadSettings() {
+    try {
+        const fileContent = await fs.readFile(getSettingsFilePath(), 'utf-8');
+        return JSON.parse(fileContent);
+    } catch (error) {
+        return { autoStart: false, mysqlPort: 3306, postgresPort: 5432, mongoPort: 27017 };
+    }
+}
+
+async function saveSettings(settings) {
+    try {
+        const filePath = getSettingsFilePath();
+        await fs.mkdir(path.dirname(filePath), { recursive: true });
+        await fs.writeFile(filePath, JSON.stringify(settings, null, 2));
+        return { success: true };
+    } catch (error) {
+        console.error('Erro ao guardar settings.json:', error);
         return { success: false, error: error.message };
     }
 }
@@ -59,4 +81,4 @@ async function resetApp() {
     }
 }
 
-module.exports = { loadData, saveData, resetApp };
+module.exports = { loadData, saveData, resetApp, loadSettings, saveSettings };

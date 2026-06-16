@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDatabases } from './hooks/useDatabases';
 import DockerErrorScreen from './components/layout/DockerErrorScreen';
 import DatabaseCard from './components/DatabaseCard';
@@ -8,6 +8,8 @@ import ResetConfirmModal from './components/modals/ResetConfirm';
 import HelpModal from './components/modals/Help';
 import LogsModal from './components/modals/Logs';
 import OnboardingScreen from './components/layout/OnboardingScreen';
+import { Sun, Moon, Settings } from 'lucide-react';
+import SettingsModal from './components/modals/Settings';
 
 function App() {
   const {
@@ -33,6 +35,27 @@ function App() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(
     localStorage.getItem('hasSeenOnboarding') === 'true'
   );
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    if (window.dockerAPI.updateTray) {
+      window.dockerAPI.updateTray(databases);
+    }
+  }, [databases]);
+
+  useEffect(() => {
+    if (window.dockerAPI.onTrayToggle) {
+      window.dockerAPI.onTrayToggle((dbId) => toggleStatus(dbId));
+    }
+  }, [toggleStatus]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   if (!hasSeenOnboarding) {
     return (
@@ -85,6 +108,16 @@ function App() {
           <p style={styles.subtitle}>Your local environment, simplified.</p>
         </div>
         <div style={styles.buttonGroup}>
+          <button
+            onClick={toggleTheme}
+            style={{ ...styles.helpButton, display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
+          <button onClick={() => setIsSettingsModalOpen(true)} style={{ ...styles.helpButton, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Settings size={16} />
+          </button>
           <button onClick={() => setIsHelpModalOpen(true)} style={styles.helpButton}>
             Help & Docs
           </button>
@@ -152,6 +185,11 @@ function App() {
         isOpen={isLogsModalOpen}
         onClose={() => setIsLogsModalOpen(false)}
         db={dbForLogs}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
       />
     </div>
   );

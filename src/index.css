@@ -7,30 +7,28 @@
   --bg-surface: #FFFFFF;
   --bg-surface-hover: #F1F5F9;
   --border-color: #E2E8F0;
-  
+
   --text-primary: #0F172A;
   --text-secondary: #64748B;
-  
+
   --accent-primary: #00D4FF;
   --accent-hover: #00B8D4;
   --accent-glow: rgba(0, 212, 255, 0.4);
-  
+
   --state-running: #10B981;
   --state-stopped: #64748B;
   --state-error: #EF4444;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* DARK MODE (Automático pelo Sistema) */
-    --bg-base: #0B1120;
-    --bg-surface: #111827;
-    --bg-surface-hover: #1F2937;
-    --border-color: #374151;
-    
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-  }
+[data-theme='dark'] {
+  /* DARK MODE (Controlado pelo React) */
+  --bg-base: #0B1120;
+  --bg-surface: #111827;
+  --bg-surface-hover: #1F2937;
+  --border-color: #374151;
+
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
 }
 
 * {
@@ -45,16 +43,20 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   height: 100vh;
-  overflow: hidden; /* Evita scroll na janela principal */
+  overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* Transição suave de tema */
 }
 
+/* Restantes estilos mantêm-se iguais (mono, animate-spin, etc.) */
 .mono {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Animação do Loader */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin {

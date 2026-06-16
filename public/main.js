@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 const os = require('os');
 const { spawn } = require('child_process');
@@ -15,15 +15,24 @@ if (process.platform === 'darwin') {
 
 const store = require('./services/store');
 const docker = require('./services/docker');
+let win;
+let tray = null;
 
 function createWindow() {
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
             nodeIntegration: false
+        }
+    });
+
+    win.on('close', function (event) {
+        if (!app.isQuitting) {
+            event.preventDefault();
+            win.hide();
         }
     });
 
@@ -45,6 +54,8 @@ app.on('window-all-closed', function () {
 app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
+
+app.on('before-quit', () => app.isQuitting = true);
 
 
 ipcMain.on('app:open-browser', (event, url) => shell.openExternal(url));
@@ -96,3 +107,38 @@ ipcMain.on('docker:stop-logs', (event, containerName) => {
         delete activeLogStreams[containerName];
     }
 });
+
+ipcMain.handle('docker:stats', (event, containerName) => docker.getStats(containerName));
+
+ipcMain.on('app:update-tray', (event, databases) => {
+    if (!tray) {
+        const icon = nativeImage.createEmpty();
+        tray = new Tray(icon);
+        tray.setTitle('LocalDB');
+        tray.setToolTip('LocalDB Manager');
+    }
+
+    const template = databases.map(db => ({
+        label: `${db.name} (${db.status})`,
+        submenu: [
+            {
+                label: db.status === 'running' ? 'Stop Container' : 'Start Container',
+                click: () => win.webContents.send('tray:toggle-db', db.id)
+            }
+        ]
+    }));
+
+    template.push({ type: 'separator' });
+    template.push({ label: 'Open Dashboard', click: () => win.show() });
+    template.push({
+        label: 'Quit', click: () => {
+            app.isQuitting = true;
+            app.quit();
+        }
+    });
+
+    tray.setContextMenu(Menu.buildFromTemplate(template));
+});
+
+ipcMain.handle('app:load-settings', () => store.loadSettings());
+ipcMain.handle('app:save-settings', (event, settings) => store.saveSettings(settings));

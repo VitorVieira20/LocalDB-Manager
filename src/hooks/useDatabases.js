@@ -15,8 +15,16 @@ export function useDatabases() {
                 return;
             }
 
+            const settings = await window.dockerAPI.loadSettings();
             const savedData = await window.dockerAPI.loadData();
+
             if (savedData.length > 0) {
+                if (settings.autoStart) {
+                    for (const db of savedData) {
+                        await window.dockerAPI.startInstance(db.name);
+                    }
+                }
+
                 const syncedData = await window.dockerAPI.syncStatus(savedData);
                 setDatabases(syncedData);
                 await window.dockerAPI.saveData(syncedData);
