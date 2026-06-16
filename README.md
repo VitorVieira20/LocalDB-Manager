@@ -45,7 +45,7 @@ If you want to contribute, modify the code, or build the application yourself, f
 
 1. **Clone the repository**
 ```bash
-   git clone [https://github.com/VitorVieira20/LocalDB-Manager.git](https://github.com/VitorVieira20/LocalDB-Manager.git)
+   git clone https://github.com/VitorVieira20/LocalDB-Manager.git
    cd LocalDB-Manager
 ```
 
