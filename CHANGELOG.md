@@ -1,3 +1,17 @@
+## [1.2.0] - 2026-06-16
+
+### Added
+- **System Tray Integration:** The application can now run in the background. Added a system tray/menu bar icon with a context menu to quickly start or stop databases without opening the main window.
+- **Light/Dark Mode:** Introduced a theme toggle in the header, allowing users to switch between Light and Dark modes. Preferences are saved automatically.
+- **Real-Time Metrics:** Database cards now poll the Docker engine to display live CPU and RAM usage for running containers.
+- **Application Settings:** Added a new Settings modal to configure global preferences.
+- **Auto-Start Feature:** Users can now opt-in via Settings to have all their previously running databases automatically start when the application launches.
+- **Custom Port Ranges:** Users can now define the default starting ports for MySQL, PostgreSQL, and MongoDB in the Settings modal.
+
+### Changed
+- **UI Icons:** Replaced system default emojis with clean, professional vector icons using the `lucide-react` library.
+- **Settings Layout:** Enhanced the responsiveness of the Settings modal with flex-wrap to prevent overflow issues on smaller screens.
+
 ## [1.1.0] - 2026-06-15
 
 ### Added
